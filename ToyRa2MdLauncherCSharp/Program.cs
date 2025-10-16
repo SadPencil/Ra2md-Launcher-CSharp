@@ -168,6 +168,8 @@ class Program
                 }
 
                 Marshal.Copy(fileData, 0, pView, fileData.Length);
+
+                // TODO: modify the file mapping by calculating with serial key etc. This step is only needed for a legit retail CD installation.
             }
 
             // Launch game using CreateProcess
