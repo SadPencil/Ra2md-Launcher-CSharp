@@ -12,6 +12,7 @@
     <Copyright>Copyright © 2025</Copyright>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <ApplicationIcon>ra2mdlauncher.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>RA2MD</DefineConstants>
