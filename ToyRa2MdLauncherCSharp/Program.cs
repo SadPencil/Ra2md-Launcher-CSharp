@@ -1,8 +1,11 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
+using ToyRa2MdLauncherCSharp.AlefCrypto;
 
 namespace ToyRa2MdLauncherCSharp;
 
@@ -60,6 +63,20 @@ class Program
         string lpCurrentDirectory,
         ref STARTUPINFO lpStartupInfo,
         out PROCESS_INFORMATION lpProcessInformation);
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    static extern bool GetVolumeInformation(
+        string rootPathName,
+        StringBuilder volumeNameBuffer,
+        uint volumeNameSize,
+        out uint volumeSerialNumber,
+        out uint maximumComponentLength,
+        out uint fileSystemFlags,
+        StringBuilder fileSystemNameBuffer,
+        uint fileSystemNameSize);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
     const uint PAGE_READWRITE = 0x04;
     const uint FILE_MAP_ALL_ACCESS = 0xF001F;
@@ -169,7 +186,8 @@ class Program
 
                 Marshal.Copy(fileData, 0, pView, fileData.Length);
 
-                // TODO: modify the file mapping by calculating with serial key etc. This step is only needed for a legit retail CD installation.
+                // Modify the file mapping by calculating with serial key etc. This step is only needed for a legit retail CD installation.
+                ModifyMappedData(pView, fileData.Length);
             }
 
             // Launch game using CreateProcess
@@ -218,6 +236,73 @@ class Program
         }
     }
 
+    private static void ModifyMappedData(IntPtr pView, int length)
+    {
+        StringBuilder keyBuilder = new StringBuilder();
+
+        using var HKLM32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        using (RegistryKey regKey = HKLM32.OpenSubKey(@"SOFTWARE\Westwood\Yuri's Revenge"))
+        {
+            if (regKey != null)
+            {
+                string installPath = regKey.GetValue("InstallPath") as string;
+                if (!string.IsNullOrEmpty(installPath))
+                {
+                    string root = Path.GetPathRoot(installPath);
+                    uint serialNum;
+                    uint maxCompLen, fsFlags;
+                    GetVolumeInformation(root, null, 0, out serialNum, out maxCompLen, out fsFlags, null, 0);
+                    keyBuilder.AppendFormat("{0:x}-", serialNum);
+                }
+
+                string serial = regKey.GetValue("Serial") as string;
+                if (!string.IsNullOrEmpty(serial))
+                {
+                    keyBuilder.Append(serial);
+                }
+            }
+        }
+
+        using (RegistryKey regKey = HKLM32.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion"))
+        {
+            if (regKey != null)
+            {
+                string productId = regKey.GetValue("ProductID") as string;
+                keyBuilder.Append("-"); // Append hyphen regardless of productId
+                if (!string.IsNullOrEmpty(productId))
+                {
+                    keyBuilder.Append(productId);
+                }
+            }
+        }
+
+        string keyStr = keyBuilder.ToString();
+        if (string.IsNullOrEmpty(keyStr))
+        {
+            // No key info found; leave data as is
+            return;
+        }
+
+        byte[] keyBytes = Encoding.ASCII.GetBytes(keyStr);
+        BlowfishContext bf = new BlowfishContext(keyBytes);
+
+        byte[] data = new byte[length];
+        Marshal.Copy(pView, data, 0, length);
+
+        int numBlocks = length / 8;
+        for (int i = 0; i < numBlocks; i++)
+        {
+            byte[] block = new byte[8];
+            Array.Copy(data, i * 8, block, 0, 8);
+
+            bf.Decrypt(block, block.Length);
+            Array.Copy(block, 0, data, i * 8, 8);
+        }
+        // Remainder (if any) is left unmodified
+
+        Marshal.Copy(data, 0, pView, length);
+    }
+
     static void HandleEventAndMessage(IntPtr hProcess, uint threadId, SafeFileHandle hMapping)
     {
         IntPtr hEvent = CreateEvent(IntPtr.Zero, false, false, EventName);
@@ -250,7 +335,4 @@ class Program
         if (pView != IntPtr.Zero) UnmapViewOfFile(pView);
         if (!hMapping.IsInvalid) hMapping.Close();
     }
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 }
