@@ -48,9 +48,6 @@ internal static class Program {
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool CloseHandle(IntPtr hObject);
 
-    [DllImport("kernel32.dll")]
-    private static extern uint GetLastError();
-
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool CreateProcess(
         string lpApplicationName,
@@ -332,7 +329,7 @@ internal static class Program {
 
     private static void HandleEventAndMessage(IntPtr hProcess, uint threadId, SafeFileHandle hMapping) {
         IntPtr hEvent = CreateEvent(IntPtr.Zero, false, false, EventName);
-        uint lastError = GetLastError();
+        int lastError = Marshal.GetLastWin32Error();
 
         if (hEvent == IntPtr.Zero) {
             Console.WriteLine($"Failed to create event. Error: {lastError}");
