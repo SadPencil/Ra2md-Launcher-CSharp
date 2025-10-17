@@ -176,6 +176,9 @@ class Program
 
     static void Main(string[] args)
     {
+        // Change working directory to the executable's directory
+        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
         bool isRa2Md = true;
 #if !RA2MD
         isRa2Md = false;
