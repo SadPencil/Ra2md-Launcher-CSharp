@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -78,6 +79,9 @@ class Program
     [DllImport("kernel32.dll", SetLastError = true)]
     static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
+    [DllImport("kernel32", CharSet = CharSet.Unicode)]
+    static extern IntPtr GetCommandLineW();
+
     const uint PAGE_READWRITE = 0x04;
     const uint FILE_MAP_ALL_ACCESS = 0xF001F;
     const uint WAIT_OBJECT_0 = 0x00000000;
@@ -122,10 +126,67 @@ class Program
         public uint dwThreadId;
     }
 
+    static string GetRawCommandLineWithoutFirstArg()
+    {
+        // Get the command line string
+        string commandLine = Marshal.PtrToStringUni(GetCommandLineW());
+
+        // Handle null or empty command line
+        if (string.IsNullOrEmpty(commandLine))
+        {
+            Debug.WriteLine("Arguments: <empty>");
+            return string.Empty;
+        }
+
+        // Find the end of the executable path
+        int startIndex = 0;
+
+        if (commandLine.StartsWith("\""))
+        {
+            startIndex = 1; // Skip opening quote
+            startIndex = commandLine.IndexOf('"', startIndex);
+            if (startIndex == -1) // Handle unbalanced quotes
+            {
+                Debug.WriteLine("Arguments: <unbalanced quotes, returning empty>");
+                return string.Empty;
+            }
+            startIndex++; // Skip closing quote
+        }
+        else
+        {
+            startIndex = commandLine.IndexOf(' ');
+            if (startIndex == -1) // No spaces, only executable path
+            {
+                Debug.WriteLine("Arguments: <no arguments>");
+                return string.Empty;
+            }
+        }
+
+        // Skip any spaces after the executable path
+        while (startIndex < commandLine.Length && commandLine[startIndex] == ' ')
+        {
+            startIndex++;
+        }
+
+        // Extract arguments
+        string arguments = startIndex < commandLine.Length ? commandLine.Substring(startIndex) : string.Empty;
+        Debug.WriteLine("Arguments: " + arguments);
+        return arguments;
+    }
+
     static void Main(string[] args)
     {
-        string gameExe = "gamemd.exe";
-        string commandLine = $"\"{gameExe}\""; // Add args if needed
+        bool isRa2Md = true;
+#if !RA2MD
+        isRa2Md = false;
+#endif
+
+        string conquerDat = isRa2Md ? "ConquerMD.dat" : "Conquer.dat";
+        string gameExe = isRa2Md ? "gamemd.exe" : "game.exe";
+
+        string rawArgs = GetRawCommandLineWithoutFirstArg();
+        string commandLine = $"\"{gameExe}\"" + (string.IsNullOrEmpty(rawArgs) ? string.Empty : " ") + rawArgs;
+        Console.WriteLine(commandLine);
 
         bool mutexCreatedNew;
         using (Mutex mutex = new Mutex(false, MutexName, out mutexCreatedNew))
@@ -135,10 +196,10 @@ class Program
 
             if (mutexCreatedNew)
             {
-                byte[] fileData = File.Exists("ConquerMD.dat") ? File.ReadAllBytes("ConquerMD.dat") : null;
+                byte[] fileData = File.Exists(conquerDat) ? File.ReadAllBytes(conquerDat) : null;
                 if (fileData == null)
                 {
-                    Console.WriteLine("ConquerMD.dat missing.");
+                    Console.WriteLine(conquerDat + " missing.");
                     return;
                 }
 
@@ -187,7 +248,7 @@ class Program
                 Marshal.Copy(fileData, 0, pView, fileData.Length);
 
                 // Modify the file mapping by calculating with serial key etc. This step is only needed for a legit retail CD installation.
-                ModifyMappedData(pView, fileData.Length);
+                ModifyMappedData(pView, fileData.Length, isRa2Md);
             }
 
             // Launch game using CreateProcess
@@ -236,12 +297,13 @@ class Program
         }
     }
 
-    private static void ModifyMappedData(IntPtr pView, int length)
+    private static void ModifyMappedData(IntPtr pView, int length, bool isRa2Md = true)
     {
         StringBuilder keyBuilder = new StringBuilder();
 
         using var HKLM32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-        using (RegistryKey regKey = HKLM32.OpenSubKey(@"SOFTWARE\Westwood\Yuri's Revenge"))
+        string regKeyName = isRa2Md ? @"SOFTWARE\Westwood\Yuri's Revenge" : @"SOFTWARE\Westwood\Red Alert 2";
+        using (RegistryKey regKey = HKLM32.OpenSubKey(regKeyName))
         {
             if (regKey != null)
             {

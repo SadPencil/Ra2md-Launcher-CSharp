@@ -4,17 +4,14 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net40</TargetFramework>
     <LangVersion>12</LangVersion>
-    <AssemblyTitle>ToyRa2MdLauncherCSharp</AssemblyTitle>
-    <Product>ToyRa2MdLauncherCSharp</Product>
+    <AssemblyTitle>ToyRa2LauncherCSharp</AssemblyTitle>
+    <Product>ToyRa2LauncherCSharp</Product>
     <Copyright>Copyright © 2025</Copyright>
-    <AssemblyTitle>ToyRa2MdLauncherCSharp</AssemblyTitle>
-    <Product>ToyRa2MdLauncherCSharp</Product>
+    <AssemblyTitle>ToyRa2LauncherCSharp</AssemblyTitle>
+    <Product>ToyRa2LauncherCSharp</Product>
     <Copyright>Copyright © 2025</Copyright>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup>
-    <DefineConstants>RA2MD</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
