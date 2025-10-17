@@ -49,7 +49,7 @@ internal static class Program {
     private static extern bool CloseHandle(IntPtr hObject);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool CreateProcess(
+    private static extern bool CreateProcessW(
         string lpApplicationName,
         string lpCommandLine,
         IntPtr lpProcessAttributes,
@@ -62,7 +62,7 @@ internal static class Program {
         out PROCESS_INFORMATION lpProcessInformation);
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-    private static extern bool GetVolumeInformation(
+    private static extern bool GetVolumeInformationA(
         string rootPathName,
         StringBuilder volumeNameBuffer,
         uint volumeNameSize,
@@ -234,7 +234,7 @@ internal static class Program {
         // Launch game using CreateProcess
         STARTUPINFO si = new() { cb = Marshal.SizeOf(typeof(STARTUPINFO)) };
 
-        bool success = CreateProcess(
+        bool success = CreateProcessW(
             null,
             commandLine,
             IntPtr.Zero,
@@ -281,7 +281,7 @@ internal static class Program {
                 string installPath = regKey.GetValue("InstallPath") as string;
                 if (!string.IsNullOrEmpty(installPath)) {
                     string root = Path.GetPathRoot(installPath);
-                    _ = GetVolumeInformation(root, null, 0, out uint serialNum, out uint maxCompLen, out uint fsFlags, null, 0);
+                    _ = GetVolumeInformationA(root, null, 0, out uint serialNum, out uint maxCompLen, out uint fsFlags, null, 0);
                     _ = keyBuilder.AppendFormat("{0:x}-", serialNum);
                 }
 
