@@ -52,7 +52,7 @@ class Program
     [DllImport("kernel32.dll")]
     static extern uint GetLastError();
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     static extern bool CreateProcess(
         string lpApplicationName,
         string lpCommandLine,
@@ -65,7 +65,7 @@ class Program
         ref STARTUPINFO lpStartupInfo,
         out PROCESS_INFORMATION lpProcessInformation);
 
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
     static extern bool GetVolumeInformation(
         string rootPathName,
         StringBuilder volumeNameBuffer,
