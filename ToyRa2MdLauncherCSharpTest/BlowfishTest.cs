@@ -1,11 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ToyRa2MdLauncherCSharp.AlefCrypto;
 
-namespace ToyRa2MdLauncherCSharpTest
-{
+namespace ToyRa2MdLauncherCSharpTest {
     [TestClass]
-    public class BlowfishTest
-    {
+    public class BlowfishTest {
         [TestMethod]
         [DataRow(
             new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // 0000000000000000
@@ -17,8 +15,7 @@ namespace ToyRa2MdLauncherCSharpTest
             new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, // FFFFFFFFFFFFFFFF
             new byte[] { 0x51, 0x86, 0x6F, 0xD5, 0xB8, 0x5E, 0xCB, 0x8A } // 51866FD5B85ECB8A
             )]
-        public void TestBlowfishEncryptAndDecrypt(byte[] key, byte[] plaintext, byte[] expectedCiphertext)
-        {
+        public void TestBlowfishEncryptAndDecrypt(byte[] key, byte[] plaintext, byte[] expectedCiphertext) {
             BlowfishContext bf = new BlowfishContext(key);
 
             byte[] ciphertext = plaintext.Clone() as byte[];
