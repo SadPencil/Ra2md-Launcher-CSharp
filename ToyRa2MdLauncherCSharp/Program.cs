@@ -278,12 +278,13 @@ internal static class Program {
         string regKeyName = isRa2Md ? @"SOFTWARE\Westwood\Yuri's Revenge" : @"SOFTWARE\Westwood\Red Alert 2";
         using (RegistryKey regKey = HKLM32.OpenSubKey(regKeyName)) {
             if (regKey != null) {
+                uint serialNum = 0;
                 string installPath = regKey.GetValue("InstallPath") as string;
                 if (!string.IsNullOrEmpty(installPath)) {
                     string root = Path.GetPathRoot(installPath);
-                    _ = GetVolumeInformationA(root, null, 0, out uint serialNum, out uint maxCompLen, out uint fsFlags, null, 0);
-                    _ = keyBuilder.AppendFormat("{0:x}-", serialNum);
+                    _ = GetVolumeInformationA(root, null, 0, out serialNum, out _, out _, null, 0);
                 }
+                _ = keyBuilder.AppendFormat("{0:x}-", serialNum);
 
                 string serial = regKey.GetValue("Serial") as string;
                 if (!string.IsNullOrEmpty(serial)) {
