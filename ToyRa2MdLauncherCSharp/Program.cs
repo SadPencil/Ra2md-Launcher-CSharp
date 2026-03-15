@@ -62,6 +62,8 @@ internal static class Program {
         // Change working directory to the executable's directory
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
+        IntPtr consoleWindow = NativeMethods.GetConsoleWindow();
+
         bool isRa2Md = true;
 #if !RA2MD
         isRa2Md = false;
@@ -163,7 +165,14 @@ internal static class Program {
 
         try {
             // Start thread to handle event and message
-            Thread monitorThread = new(() => HandleEventAndMessage(pi.hProcess, pi.dwThreadId, hMapping, hEvent, isOtherInstanceRunning));
+            Thread monitorThread = new(() => {
+                HandleEventAndMessage(pi.hProcess, pi.dwThreadId, hMapping, hEvent, isOtherInstanceRunning);
+
+                // Hide console window
+                if (consoleWindow != IntPtr.Zero) {
+                    NativeMethods.ShowWindow(consoleWindow, NativeMethods.SW_HIDE);
+                }
+            });
             monitorThread.Start();
 
             // Wait for the game process to exit
