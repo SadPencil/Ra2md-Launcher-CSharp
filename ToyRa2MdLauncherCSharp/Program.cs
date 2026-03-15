@@ -82,13 +82,9 @@ internal static class Program {
         IntPtr pView = IntPtr.Zero;
 
         if (mutexCreatedNew) {
-            byte[] conquerData = File.Exists(conquerDat) ? File.ReadAllBytes(conquerDat) : null;
-            if (conquerData == null) {
-                Console.WriteLine(conquerDat + " missing.");
-                return;
-            }
+            byte[] expectedPlaintextBytes = Encoding.ASCII.GetBytes(expectedPlaintext);
 
-            uint size = (uint)conquerData.Length;
+            uint size = (uint)expectedPlaintextBytes.Length;
 
             // Create inheritable security attributes
             NativeMethods.SECURITY_ATTRIBUTES sa = new() {
@@ -125,18 +121,17 @@ internal static class Program {
                 return;
             }
 
-            // Modify the file mapping by calculating with serial key etc. This step is only needed for a legit retail CD installation.
-            DecryptConquerData(conquerData, isRa2Md);
+            // Provide a decrypted string to the game process via shared memory. This step is only needed for a legit retail CD installation.
+            byte[] conquerData = File.Exists(conquerDat) ? File.ReadAllBytes(conquerDat) : null;
+            if (conquerData != null) {
+                DecryptConquerData(conquerData, isRa2Md);
 
-            byte[] expectedPlaintextBytes = Encoding.ASCII.GetBytes(expectedPlaintext);
-            if (expectedPlaintextBytes.SequenceEqual(conquerData)) {
-                Console.WriteLine("You own a legit CD copy. This is awesome!");
-            }
-            else {
-                conquerData = expectedPlaintextBytes;
+                if (expectedPlaintextBytes.SequenceEqual(conquerData)) {
+                    Console.WriteLine("You own a legit CD copy. This is awesome!");
+                }
             }
 
-            Marshal.Copy(conquerData, 0, pView, conquerData.Length);
+            Marshal.Copy(expectedPlaintextBytes, 0, pView, expectedPlaintextBytes.Length);
         }
 
         // Launch game using CreateProcess
