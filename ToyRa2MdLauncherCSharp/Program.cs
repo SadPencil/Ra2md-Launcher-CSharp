@@ -342,7 +342,7 @@ internal static class Program {
             IntPtr[] handles = { hEvent, hProcess };
             uint waitResult = WaitForMultipleObjects(2, handles, false, 300000);
 
-            if (waitResult == WAIT_OBJECT_0 && !hMapping.IsInvalid) {
+            if (waitResult == WAIT_OBJECT_0 && hMapping != null && !hMapping.IsInvalid) {
                 _ = PostThreadMessage(threadId, WM_CUSTOM, IntPtr.Zero, hMapping.DangerousGetHandle());
             }
         }
@@ -355,7 +355,7 @@ internal static class Program {
             _ = UnmapViewOfFile(pView);
         }
 
-        if (!hMapping.IsInvalid) {
+        if (hMapping != null && !hMapping.IsInvalid) {
             hMapping.Close();
         }
     }
