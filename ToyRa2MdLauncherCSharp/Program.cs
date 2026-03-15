@@ -3,6 +3,7 @@ using Microsoft.Win32.SafeHandles;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -172,6 +173,7 @@ internal static class Program {
 
         string conquerDat = isRa2Md ? "ConquerMD.dat" : "Conquer.dat";
         string gameExe = isRa2Md ? "gamemd.exe" : "game.exe";
+        string expectedPlaintext = isRa2Md ? "UIDATA,3DDATA,MAPS\0" : "(c) 2000 Electronic Arts, Inc. All Rights Reserved";
 
         string rawArgs = GetRawCommandLineWithoutFirstArg();
         string commandLine = $"\"{gameExe}\"" + (string.IsNullOrEmpty(rawArgs) ? string.Empty : " ") + rawArgs;
@@ -182,13 +184,13 @@ internal static class Program {
         IntPtr pView = IntPtr.Zero;
 
         if (mutexCreatedNew) {
-            byte[] fileData = File.Exists(conquerDat) ? File.ReadAllBytes(conquerDat) : null;
-            if (fileData == null) {
+            byte[] conquerData = File.Exists(conquerDat) ? File.ReadAllBytes(conquerDat) : null;
+            if (conquerData == null) {
                 Console.WriteLine(conquerDat + " missing.");
                 return;
             }
 
-            uint size = (uint)fileData.Length;
+            uint size = (uint)conquerData.Length;
 
             // Create inheritable security attributes
             SECURITY_ATTRIBUTES sa = new() {
@@ -225,10 +227,18 @@ internal static class Program {
                 return;
             }
 
-            Marshal.Copy(fileData, 0, pView, fileData.Length);
-
             // Modify the file mapping by calculating with serial key etc. This step is only needed for a legit retail CD installation.
-            ModifyMappedData(pView, fileData.Length, isRa2Md);
+            DecryptConquerData(ref conquerData, isRa2Md);
+
+            byte[] expectedPlaintextBytes = Encoding.ASCII.GetBytes(expectedPlaintext);
+            if (expectedPlaintextBytes.SequenceEqual(conquerData)) {
+                Console.WriteLine("You own a legit CD copy. This is awesome!");
+            }
+            else {
+                conquerData = expectedPlaintextBytes;
+            }
+
+            Marshal.Copy(conquerData, 0, pView, conquerData.Length);
         }
 
         // Launch game using CreateProcess
@@ -274,7 +284,7 @@ internal static class Program {
         }
     }
 
-    private static void ModifyMappedData(IntPtr pView, int length, bool isRa2Md = true) {
+    private static string GetBlowfishKey(bool isRa2Md) {
         StringBuilder keyBuilder = new();
 
         using RegistryKey HKLM32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
@@ -307,18 +317,20 @@ internal static class Program {
         }
 
         string keyStr = keyBuilder.ToString();
-        if (string.IsNullOrEmpty(keyStr)) {
+        return keyStr;
+    }
+
+    private static void DecryptConquerData(ref byte[] data, bool isRa2Md) {
+        string key = GetBlowfishKey(isRa2Md);
+        if (string.IsNullOrEmpty(key)) {
             // No key info found; leave data as is
             return;
         }
 
-        byte[] keyBytes = Encoding.ASCII.GetBytes(keyStr);
+        byte[] keyBytes = Encoding.ASCII.GetBytes(key);
         BlowfishContext bf = new(keyBytes);
 
-        byte[] data = new byte[length];
-        Marshal.Copy(pView, data, 0, length);
-
-        int numBlocks = length / 8;
+        int numBlocks = data.Length / 8;
         for (int i = 0; i < numBlocks; i++) {
             byte[] block = new byte[8];
             Array.Copy(data, i * 8, block, 0, 8);
@@ -327,8 +339,6 @@ internal static class Program {
             Array.Copy(block, 0, data, i * 8, 8);
         }
         // Remainder (if any) is left unmodified
-
-        Marshal.Copy(data, 0, pView, length);
     }
 
     private static void HandleEventAndMessage(IntPtr hProcess, uint threadId, SafeFileHandle hMapping, IntPtr hEvent, bool isOtherInstanceRunning) {
