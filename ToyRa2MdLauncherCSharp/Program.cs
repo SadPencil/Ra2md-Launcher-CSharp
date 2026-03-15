@@ -16,113 +16,9 @@ internal static class Program {
     private const string EventName = "D6E7FC97-64F9-4d28-B52C-754EDF721C6F";
     private const uint WM_CUSTOM = 0xBEEF;
 
-    // P/Invoke declarations
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern SafeFileHandle CreateFileMapping(
-        IntPtr hFile,
-        IntPtr lpAttributes,
-        uint flProtect,
-        uint dwMaxHigh,
-        uint dwMaxLow,
-        string lpName);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr MapViewOfFile(
-        SafeFileHandle hFileMapping,
-        uint dwDesiredAccess,
-        uint dwFileOffsetHigh,
-        uint dwFileOffsetLow,
-        UIntPtr dwNumberOfBytesToMap);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool UnmapViewOfFile(IntPtr lpBaseAddress);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool PostThreadMessage(uint threadId, uint msg, IntPtr wParam, IntPtr lParam);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr CreateEvent(IntPtr lpSecurityAttributes, bool bManualReset, bool bInitialState, string lpName);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern uint WaitForMultipleObjects(uint nCount, IntPtr[] lpHandles, bool bWaitAll, uint dwMilliseconds);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool CreateProcessW(
-        string lpApplicationName,
-        string lpCommandLine,
-        IntPtr lpProcessAttributes,
-        IntPtr lpThreadAttributes,
-        bool bInheritHandles,
-        uint dwCreationFlags,
-        IntPtr lpEnvironment,
-        string lpCurrentDirectory,
-        ref STARTUPINFO lpStartupInfo,
-        out PROCESS_INFORMATION lpProcessInformation);
-
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-    private static extern bool GetVolumeInformationA(
-        string rootPathName,
-        StringBuilder volumeNameBuffer,
-        uint volumeNameSize,
-        out uint volumeSerialNumber,
-        out uint maximumComponentLength,
-        out uint fileSystemFlags,
-        StringBuilder fileSystemNameBuffer,
-        uint fileSystemNameSize);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-
-    [DllImport("kernel32", CharSet = CharSet.Unicode)]
-    private static extern IntPtr GetCommandLineW();
-
-    private const uint PAGE_READWRITE = 0x04;
-    private const uint FILE_MAP_ALL_ACCESS = 0xF001F;
-    private const uint WAIT_OBJECT_0 = 0x00000000;
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct SECURITY_ATTRIBUTES {
-        public int nLength;
-        public IntPtr lpSecurityDescriptor;
-        public bool bInheritHandle;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct STARTUPINFO {
-        public int cb;
-        public string lpReserved;
-        public string lpDesktop;
-        public string lpTitle;
-        public int dwX;
-        public int dwY;
-        public int dwXSize;
-        public int dwYSize;
-        public int dwXCountChars;
-        public int dwYCountChars;
-        public int dwFillAttribute;
-        public int dwFlags;
-        public short wShowWindow;
-        public short cbReserved2;
-        public IntPtr lpReserved2;
-        public IntPtr hStdInput;
-        public IntPtr hStdOutput;
-        public IntPtr hStdError;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct PROCESS_INFORMATION {
-        public IntPtr hProcess;
-        public IntPtr hThread;
-        public uint dwProcessId;
-        public uint dwThreadId;
-    }
-
     private static string GetRawCommandLineWithoutFirstArg() {
         // Get the command line string
-        string commandLine = Marshal.PtrToStringUni(GetCommandLineW());
+        string commandLine = Marshal.PtrToStringUni(NativeMethods.GetCommandLineW());
 
         // Handle null or empty command line
         if (string.IsNullOrEmpty(commandLine)) {
@@ -193,8 +89,8 @@ internal static class Program {
             uint size = (uint)conquerData.Length;
 
             // Create inheritable security attributes
-            SECURITY_ATTRIBUTES sa = new() {
-                nLength = Marshal.SizeOf(typeof(SECURITY_ATTRIBUTES)),
+            NativeMethods.SECURITY_ATTRIBUTES sa = new() {
+                nLength = Marshal.SizeOf(typeof(NativeMethods.SECURITY_ATTRIBUTES)),
                 lpSecurityDescriptor = IntPtr.Zero,
                 bInheritHandle = true
             };
@@ -203,10 +99,10 @@ internal static class Program {
             try {
                 Marshal.StructureToPtr(sa, pSa, false);
 
-                hMapping = CreateFileMapping(
+                hMapping = NativeMethods.CreateFileMapping(
                     new IntPtr(-1),
                     pSa,
-                    PAGE_READWRITE,
+                    NativeMethods.PAGE_READWRITE,
                     0,
                     size,
                     null);
@@ -220,7 +116,7 @@ internal static class Program {
                 Marshal.FreeHGlobal(pSa);
             }
 
-            pView = MapViewOfFile(hMapping, FILE_MAP_ALL_ACCESS, 0, 0, new UIntPtr(size));
+            pView = NativeMethods.MapViewOfFile(hMapping, NativeMethods.FILE_MAP_ALL_ACCESS, 0, 0, new UIntPtr(size));
             if (pView == IntPtr.Zero) {
                 Console.WriteLine($"Failed to map view. Error: {Marshal.GetLastWin32Error()}");
                 hMapping.Close();
@@ -242,12 +138,12 @@ internal static class Program {
         }
 
         // Launch game using CreateProcess
-        STARTUPINFO si = new() { cb = Marshal.SizeOf(typeof(STARTUPINFO)) };
+        NativeMethods.STARTUPINFO si = new() { cb = Marshal.SizeOf(typeof(NativeMethods.STARTUPINFO)) };
 
-        IntPtr hEvent = CreateEvent(IntPtr.Zero, false, false, EventName);
+        IntPtr hEvent = NativeMethods.CreateEvent(IntPtr.Zero, false, false, EventName);
         bool isOtherInstanceRunning = Marshal.GetLastWin32Error() == 183;
 
-        bool success = CreateProcessW(
+        bool success = NativeMethods.CreateProcessW(
             null,
             commandLine,
             IntPtr.Zero,
@@ -257,7 +153,7 @@ internal static class Program {
             IntPtr.Zero,
             Environment.CurrentDirectory,
             ref si,
-            out PROCESS_INFORMATION pi);
+            out NativeMethods.PROCESS_INFORMATION pi);
 
         if (!success) {
             Console.WriteLine($"Failed to launch game. Error: {Marshal.GetLastWin32Error()}");
@@ -271,12 +167,12 @@ internal static class Program {
             monitorThread.Start();
 
             // Wait for the game process to exit
-            WaitForSingleObject(pi.hProcess, 0xFFFFFFFF); // Infinite wait
+            NativeMethods.WaitForSingleObject(pi.hProcess, 0xFFFFFFFF); // Infinite wait
         }
         finally {
             // Cleanup process handles
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
+            NativeMethods.CloseHandle(pi.hProcess);
+            NativeMethods.CloseHandle(pi.hThread);
         }
 
         if (mutexCreatedNew) {
@@ -295,7 +191,7 @@ internal static class Program {
                 string installPath = regKey.GetValue("InstallPath") as string;
                 if (!string.IsNullOrEmpty(installPath)) {
                     string root = Path.GetPathRoot(installPath);
-                    _ = GetVolumeInformationA(root, null, 0, out serialNum, out _, out _, null, 0);
+                    _ = NativeMethods.GetVolumeInformationA(root, null, 0, out serialNum, out _, out _, null, 0);
                 }
                 _ = keyBuilder.AppendFormat("{0:x}-", serialNum);
 
@@ -344,19 +240,19 @@ internal static class Program {
     private static void HandleEventAndMessage(IntPtr hProcess, uint threadId, SafeFileHandle hMapping, IntPtr hEvent, bool isOtherInstanceRunning) {
         if (!isOtherInstanceRunning) {
             IntPtr[] handles = { hEvent, hProcess };
-            uint waitResult = WaitForMultipleObjects(2, handles, false, 300000);
+            uint waitResult = NativeMethods.WaitForMultipleObjects(2, handles, false, 300000);
 
-            if (waitResult == WAIT_OBJECT_0 && hMapping != null && !hMapping.IsInvalid) {
-                _ = PostThreadMessage(threadId, WM_CUSTOM, IntPtr.Zero, hMapping.DangerousGetHandle());
+            if (waitResult == NativeMethods.WAIT_OBJECT_0 && hMapping != null && !hMapping.IsInvalid) {
+                _ = NativeMethods.PostThreadMessage(threadId, WM_CUSTOM, IntPtr.Zero, hMapping.DangerousGetHandle());
             }
         }
 
-        _ = CloseHandle(hEvent);
+        _ = NativeMethods.CloseHandle(hEvent);
     }
 
     private static void Cleanup(IntPtr pView, SafeFileHandle hMapping) {
         if (pView != IntPtr.Zero) {
-            _ = UnmapViewOfFile(pView);
+            _ = NativeMethods.UnmapViewOfFile(pView);
         }
 
         if (hMapping != null && !hMapping.IsInvalid) {
