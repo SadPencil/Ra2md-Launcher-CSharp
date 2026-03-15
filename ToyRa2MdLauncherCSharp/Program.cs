@@ -234,6 +234,9 @@ internal static class Program {
         // Launch game using CreateProcess
         STARTUPINFO si = new() { cb = Marshal.SizeOf(typeof(STARTUPINFO)) };
 
+        IntPtr hEvent = CreateEvent(IntPtr.Zero, false, false, EventName);
+        bool isOtherInstanceRunning = Marshal.GetLastWin32Error() == 183;
+
         bool success = CreateProcessW(
             null,
             commandLine,
@@ -254,7 +257,7 @@ internal static class Program {
 
         try {
             // Start thread to handle event and message
-            Thread monitorThread = new(() => HandleEventAndMessage(pi.hProcess, pi.dwThreadId, hMapping));
+            Thread monitorThread = new(() => HandleEventAndMessage(pi.hProcess, pi.dwThreadId, hMapping, hEvent, isOtherInstanceRunning));
             monitorThread.Start();
 
             // Wait for the game process to exit
@@ -328,18 +331,8 @@ internal static class Program {
         Marshal.Copy(data, 0, pView, length);
     }
 
-    private static void HandleEventAndMessage(IntPtr hProcess, uint threadId, SafeFileHandle hMapping) {
-        IntPtr hEvent = CreateEvent(IntPtr.Zero, false, false, EventName);
-        int lastError = Marshal.GetLastWin32Error();
-
-        if (hEvent == IntPtr.Zero) {
-            Console.WriteLine($"Failed to create event. Error: {lastError}");
-            return;
-        }
-
-        bool alreadyExists = lastError == 183;
-
-        if (!alreadyExists) {
+    private static void HandleEventAndMessage(IntPtr hProcess, uint threadId, SafeFileHandle hMapping, IntPtr hEvent, bool isOtherInstanceRunning) {
+        if (!isOtherInstanceRunning) {
             IntPtr[] handles = { hEvent, hProcess };
             uint waitResult = WaitForMultipleObjects(2, handles, false, 300000);
 
