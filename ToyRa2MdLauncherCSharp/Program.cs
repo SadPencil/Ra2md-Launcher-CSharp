@@ -126,7 +126,7 @@ internal static class Program {
             }
 
             // Modify the file mapping by calculating with serial key etc. This step is only needed for a legit retail CD installation.
-            DecryptConquerData(ref conquerData, isRa2Md);
+            DecryptConquerData(conquerData, isRa2Md);
 
             byte[] expectedPlaintextBytes = Encoding.ASCII.GetBytes(expectedPlaintext);
             if (expectedPlaintextBytes.SequenceEqual(conquerData)) {
@@ -225,7 +225,7 @@ internal static class Program {
         return keyStr;
     }
 
-    private static void DecryptConquerData(ref byte[] data, bool isRa2Md) {
+    private static void DecryptConquerData(byte[] data, bool isRa2Md) {
         string key = GetBlowfishKey(isRa2Md);
         if (string.IsNullOrEmpty(key)) {
             // No key info found; leave data as is
