@@ -10,7 +10,7 @@
     <Product>ToyRa2MdLauncherCSharp</Product>
     <Copyright>Copyright © SadPencil 2025-2026</Copyright>
     <Company>SadPencil</Company>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <ApplicationIcon>ra2mdlauncher.ico</ApplicationIcon>
   </PropertyGroup>
