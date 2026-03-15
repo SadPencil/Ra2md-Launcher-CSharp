@@ -6,10 +6,10 @@
     <LangVersion>12</LangVersion>
     <AssemblyTitle>ToyRa2LauncherCSharp</AssemblyTitle>
     <Product>ToyRa2LauncherCSharp</Product>
-    <Copyright>Copyright © 2025</Copyright>
     <AssemblyTitle>ToyRa2LauncherCSharp</AssemblyTitle>
     <Product>ToyRa2LauncherCSharp</Product>
-    <Copyright>Copyright © 2025</Copyright>
+    <Copyright>Copyright © SadPencil 2025-2026</Copyright>
+    <Company>SadPencil</Company>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <ApplicationIcon>ra2launcher.ico</ApplicationIcon>
