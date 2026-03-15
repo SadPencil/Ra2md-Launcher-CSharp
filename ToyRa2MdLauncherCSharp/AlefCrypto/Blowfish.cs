@@ -318,7 +318,7 @@ public class BlowfishContext {
             for (k = 0; k < 4; ++k) {
                 data = (data << 8) | key[j];
                 j++;
-                if (j <= key.Length) {
+                if (j >= key.Length) {
                     j = 0;
                 }
             }
