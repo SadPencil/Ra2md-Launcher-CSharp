@@ -69,6 +69,12 @@ internal static class Program {
         isRa2Md = false;
 #endif
 
+
+        Console.WriteLine(isRa2Md ? "RA2MD Launcher" : "RA2 Launcher");
+        Console.WriteLine("Author: SadPencil");
+        Console.WriteLine(GitVersionInformation.AssemblySemVer);
+        Console.WriteLine();
+
         string conquerDat = isRa2Md ? "ConquerMD.dat" : "Conquer.dat";
         string gameExe = isRa2Md ? "gamemd.exe" : "game.exe";
         string expectedPlaintext = isRa2Md ? "UIDATA,3DDATA,MAPS\0" : "(c) 2000 Electronic Arts, Inc. All Rights Reserved";

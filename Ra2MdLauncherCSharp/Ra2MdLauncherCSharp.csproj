@@ -29,6 +29,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <PropertyGroup>
+    <!-- There is a race condition in GitVersion. Disable writing version info should help a bit -->
+    <WriteVersionInfoToBuildLog>false</WriteVersionInfoToBuildLog>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
