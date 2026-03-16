@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{58D1A552-FFA9-47E4-97C7-A088E0CDB13A}</ProjectGuid>
+    <ProjectGuid>{7381A343-1B5B-4741-94D7-601DD4AD5962}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <TargetFramework>net40</TargetFramework>
     <LangVersion>12</LangVersion>
