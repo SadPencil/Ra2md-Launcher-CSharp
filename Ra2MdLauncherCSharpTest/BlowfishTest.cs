@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ToyRa2MdLauncherCSharp.AlefCrypto;
+using Ra2MdLauncherCSharp.AlefCrypto;
 
-namespace ToyRa2MdLauncherCSharpTest {
+namespace Ra2MdLauncherCSharpTest {
     [TestClass]
     public class BlowfishTest {
         [TestMethod]

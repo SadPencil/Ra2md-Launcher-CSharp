@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ToyRa2MdLauncherCSharp;
+namespace Ra2MdLauncherCSharp;
 
 public static class NativeMethods {
 

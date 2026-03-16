@@ -4,15 +4,18 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net40</TargetFramework>
     <LangVersion>12</LangVersion>
-    <AssemblyTitle>ToyRa2LauncherCSharp</AssemblyTitle>
-    <Product>ToyRa2LauncherCSharp</Product>
-    <AssemblyTitle>ToyRa2LauncherCSharp</AssemblyTitle>
-    <Product>ToyRa2LauncherCSharp</Product>
+    <AssemblyTitle>Ra2MdLauncherCSharp</AssemblyTitle>
+    <Product>Ra2MdLauncherCSharp</Product>
+    <AssemblyTitle>Ra2MdLauncherCSharp</AssemblyTitle>
+    <Product>Ra2MdLauncherCSharp</Product>
     <Copyright>Copyright © SadPencil 2025-2026</Copyright>
     <Company>SadPencil</Company>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <ApplicationIcon>ra2launcher.ico</ApplicationIcon>
+    <ApplicationIcon>ra2mdlauncher.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DefineConstants>RA2MD</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

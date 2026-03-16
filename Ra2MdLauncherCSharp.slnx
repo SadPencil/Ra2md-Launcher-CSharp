@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="Ra2MdLauncherCSharp/Ra2LauncherCSharp.csproj" />
+  <Project Path="Ra2MdLauncherCSharp/Ra2MdLauncherCSharp.csproj" />
+  <Project Path="Ra2MdLauncherCSharpTest/Ra2MdLauncherCSharpTest.csproj" />
+</Solution>

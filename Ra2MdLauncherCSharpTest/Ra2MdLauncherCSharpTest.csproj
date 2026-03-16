@@ -9,8 +9,8 @@
       shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <AssemblyTitle>ToyRa2MdLauncherCSharpTest</AssemblyTitle>
-    <Product>ToyRa2MdLauncherCSharpTest</Product>
+    <AssemblyTitle>Ra2MdLauncherCSharpTest</AssemblyTitle>
+    <Product>Ra2MdLauncherCSharpTest</Product>
     <Copyright>Copyright © SadPencil 2025-2026</Copyright>
     <Company>SadPencil</Company>
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -28,6 +28,6 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ToyRa2MdLauncherCSharp\ToyRa2MdLauncherCSharp.csproj" />
+    <ProjectReference Include="..\Ra2MdLauncherCSharp\Ra2MdLauncherCSharp.csproj" />
   </ItemGroup>
 </Project>

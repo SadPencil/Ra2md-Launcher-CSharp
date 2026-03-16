@@ -7,9 +7,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using ToyRa2MdLauncherCSharp.AlefCrypto;
+using Ra2MdLauncherCSharp.AlefCrypto;
 
-namespace ToyRa2MdLauncherCSharp;
+namespace Ra2MdLauncherCSharp;
 
 internal static class Program {
     private const string MutexName = "48BC11BD-C4D7-466b-8A31-C6ABBAD47B3E";

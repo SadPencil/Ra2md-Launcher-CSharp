@@ -3,7 +3,7 @@ using System.Text;
 
 // https://gist.github.com/vbe0201/af16e522562b2122953206d8bbd1eb50
 
-namespace ToyRa2MdLauncherCSharp.AlefCrypto;
+namespace Ra2MdLauncherCSharp.AlefCrypto;
 
 /// <summary>
 /// Table that holds subkey arrays for the Blowfish implementation.

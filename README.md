@@ -1,4 +1,4 @@
-# Toy-Ra2md-Launcher-CSharp
+# Ra2md-Launcher-CSharp
 
 A drop-in replacement that behaves identically (except the SafeDisc checking) with the original `Ra2.exe` and `RA2MD.exe` launcher.
 
